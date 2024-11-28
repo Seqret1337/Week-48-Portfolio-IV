@@ -21,6 +21,7 @@ function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
     return levels;
 }
 
+let currentLevel = startingLevel;
 let levelData = readMapFile(levels[startingLevel]);
 let level = levelData;
 
@@ -94,6 +95,16 @@ class Labyrinth {
 
         let tRow = playerPos.row + (1 * drow);
         let tcol = playerPos.col + (1 * dcol);
+
+        if (currentLevel === startingLevel && tcol === level[0].length - 1 && tRow === 2) {
+            currentLevel = "aSharpPlace";
+            level = readMapFile(levels[currentLevel]);
+            playerPos.row = null;
+            playerPos.col = null;
+            isDirty = true;
+            eventText = "You made it to the next level";
+            return;
+        } 
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
