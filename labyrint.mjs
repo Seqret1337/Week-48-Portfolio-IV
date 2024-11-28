@@ -7,6 +7,8 @@ import * as CONST from "./constants.mjs";
 const startingLevel = CONST.START_LEVEL_ID;
 const levels = loadLevelListings();
 
+const levelStates = {};
+
 function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
     let data = readRecordFile(source);
     let levels = {};
@@ -24,6 +26,7 @@ function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
 let currentLevel = startingLevel;
 let levelData = readMapFile(levels[startingLevel]);
 let level = levelData;
+levelStates[currentLevel] = level;
 
 let pallet = {
     "█": ANSI.COLOR.LIGHT_GRAY,
@@ -97,14 +100,31 @@ class Labyrinth {
         let tcol = playerPos.col + (1 * dcol);
 
         if (currentLevel === startingLevel && tcol === level[0].length - 1 && tRow === 2) {
+            levelStates[currentLevel] = level.map(row => [...row]);
             currentLevel = "aSharpPlace";
-            level = readMapFile(levels[currentLevel]);
-            playerPos.row = null;
-            playerPos.col = null;
+
+            if (!levelStates[currentLevel]) {
+                levelStates[currentLevel] = readMapFile(levels[currentLevel]);
+            }
+            level = levelStates[currentLevel].map(row => [...row]);
+            level[2][0] = EMPTY;
+            playerPos.row = 2;
+            playerPos.col = 1;
             isDirty = true;
             eventText = "You made it to the next level";
             return;
-        } 
+        } else if (currentLevel === "aSharpPlace" && tcol === 0 && tRow == 2) {
+            levelStates[currentLevel] = level.map(row => [...row]);
+            currentLevel = startingLevel;
+
+            level = levelStates[currentLevel].map(row => [...row]);
+            level[6][4] = EMPTY;  
+            playerPos.row = 2;
+            playerPos.col = level[0].length - 2;
+            isDirty = true;
+            eventText = "Returned to first level";
+            return;
+        }
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
