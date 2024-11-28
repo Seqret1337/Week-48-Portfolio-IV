@@ -2,6 +2,7 @@ import ANSI from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
+import oscillate from "./utils/oscilate.mjs";
 
 
 const startingLevel = CONST.START_LEVEL_ID;
@@ -46,6 +47,8 @@ let playerPos = {
 const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$"
+const NPC = "X";
+const WALL = "█";
 
 let direction = -1;
 
@@ -62,6 +65,68 @@ const playerStats = {
     chash: 0
 }
 
+let npcs = [];
+class NpcPatrol {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+        this.startCol = col;
+        this.horizontalPattern = oscillate(col -2, col +2);
+        this.verticalPattern = oscillate(row -2, row +2);
+        this.movingVertically = false;
+    }
+
+    canMoveTo(row, col) {
+        return level[row][col] === EMPTY;
+    }
+
+    update() {
+        if (!this.movingVertically) {
+            let oldCol = this.col;
+
+            let desiredCol = this.horizontalPattern();
+        
+            let step = Math.sign(desiredCol - this.col);
+            let newCol = this.col + step;
+
+            if (!this.canMoveTo(this.row, newCol)) {
+                this.movingVertically = true;
+                return false;
+            }
+
+            level[this.row][oldCol] = EMPTY;
+            this.col = newCol;
+            level[this.row][this.col] = NPC;
+            return true;
+        } else {
+            let oldRow = this.row;
+            let desiredRow = this.verticalPattern();
+            let step = Math.sign(desiredRow - this.row);
+            let newRow = this.row + step;
+
+            if (!this.canMoveTo(newRow, this.col)) {
+                this.movingVertically = false;
+                return false;
+            }
+
+            level[oldRow][this.col] = EMPTY;
+            this.row = newRow;
+            level[this.row][this.col] = NPC;
+            return true;
+        }
+    }
+}
+
+function findNPCs() {
+    npcs = [];
+    for (let row = 0; row < level.length; row++) {
+        for (let col = 0; col < level[row].length; col++) {
+            if (level[row][col] === NPC) {
+                npcs.push(new NpcPatrol(row, col));
+            }
+        }
+    }
+}
 class Labyrinth {
 
     update() {
@@ -79,6 +144,17 @@ class Labyrinth {
                     break;
                 }
             }
+            findNPCs();
+        }
+
+        let npcMoved = false;
+        for (let npc of npcs) {
+            if (npc.update()) {
+                npcMoved = true;
+            }
+        }
+        if (npcMoved) {
+            isDirty = true;
         }
 
         let drow = 0;
@@ -110,6 +186,7 @@ class Labyrinth {
             level[2][0] = EMPTY;
             playerPos.row = 2;
             playerPos.col = 1;
+            findNPCs();
             isDirty = true;
             eventText = "You made it to the next level";
             return;
@@ -121,6 +198,7 @@ class Labyrinth {
             level[6][4] = EMPTY;  
             playerPos.row = 2;
             playerPos.col = level[0].length - 2;
+            findNPCs();
             isDirty = true;
             eventText = "Returned to first level";
             return;
