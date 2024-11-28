@@ -34,8 +34,8 @@ let pallet = {
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
+    "♨": ANSI.COLOR.BLUE,
 }
-
 
 let isDirty = true;
 
@@ -49,12 +49,13 @@ const HERO = "H";
 const LOOT = "$"
 const NPC = "X";
 const WALL = "█";
+const TELEPORTER = "♨";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY];
+const THINGS = [LOOT, EMPTY, TELEPORTER];
 
 let eventText = "";
 
@@ -195,18 +196,56 @@ class Labyrinth {
             currentLevel = startingLevel;
 
             level = levelStates[currentLevel].map(row => [...row]);
-            level[6][4] = EMPTY;  
+            level[2][1] = EMPTY;  
             playerPos.row = 2;
             playerPos.col = level[0].length - 2;
             findNPCs();
             isDirty = true;
             eventText = "Returned to first level";
             return;
+        } else if (currentLevel === "aSharpPlace" && tcol === 16 && tRow === 15) {
+            levelStates[currentLevel] = level.map(row => [...row]);
+            currentLevel = "treasure";
+
+            if (!levelStates[currentLevel]) {
+                levelStates[currentLevel] = readMapFile(levels[currentLevel]);
+            }
+
+            level = levelStates[currentLevel].map(row => [...row]);
+            level[6][4] = EMPTY;  
+            playerPos.row = 4;
+            playerPos.col = 18;
+            findNPCs();
+            isDirty = true;
+            eventText = "You found the treasure room!";
+            return;
+        } else if (currentLevel === "treasure" && tcol === 19 && tRow === 4) {
+            currentLevel = "aSharpPlace";
+            level = levelStates[currentLevel].map(row => [...row]);
+            playerPos.row = 14;
+            playerPos.col = 16;
+            findNPCs();
+            isDirty = true;
+            eventText = "Returned to second level";
+            return;
         }
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
             let currentItem = level[tRow][tcol];
+
+            if (currentItem === TELEPORTER) {
+                let otherTeleporter = this.findOtherTeleporter(tRow, tcol);
+                if (otherTeleporter) {
+                    level[playerPos.row][playerPos.col] = EMPTY;
+                    level[otherTeleporter.row + 1][otherTeleporter.col] = HERO;
+                    playerPos.row = otherTeleporter.row + 1;
+                    playerPos.col = otherTeleporter.col;
+                    isDirty = true;
+                    eventText = "You teleported!";
+                    return;
+                }
+            }
             if (currentItem == LOOT) {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
@@ -226,6 +265,17 @@ class Labyrinth {
         } else {
             direction *= -1;
         }
+    }
+
+    findOtherTeleporter(currentRow, currentCol) {
+        for (let row = 0; row < level.length; row++) {
+            for (let col = 0; col < level[row].length; col++) {
+                if (level[row][col] === TELEPORTER && (row !== currentRow || col !== currentCol)) {
+                    return {row,col};
+                }
+            }
+        }
+        return null;
     }
 
     draw() {
