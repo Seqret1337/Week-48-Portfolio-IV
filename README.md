@@ -14,3 +14,6 @@ functionalities added:
 
 ** Create an animated splash screen (this was a group assignment from a previous week) using splashScreen.mjs.
 
+Give the NPCs stats, such as strength and hitpoints.
+
+Implement a simple battle system where collisions deal damage, using player and NPC stats to calculate damage dealt.

@@ -63,7 +63,9 @@ const HP_MAX = 10;
 
 const playerStats = {
     hp: 8,
-    chash: 0
+    chash: 0,
+    strength: 3,
+    isAlive: true
 }
 
 let npcs = [];
@@ -75,18 +77,34 @@ class NpcPatrol {
         this.horizontalPattern = oscillate(col -2, col +2);
         this.verticalPattern = oscillate(row -2, row +2);
         this.movingVertically = false;
+
+        this.stats = {
+            hp: Math.floor(Math.random()* 10) + 1,
+            isAlive: true,
+            strength: Math.floor(Math.random() * 2) + 1
+        };
     }
 
     canMoveTo(row, col) {
-        return level[row][col] === EMPTY;
+        return level[row][col] === EMPTY && this.stats.isAlive;
+    }
+
+    takeDamage(amount) {
+        this.stats.hp -= amount;
+        if (this.stats.hp <= 0) {
+            this.stats.isAlive = false;
+            level[this.row][this.col] = EMPTY;
+            return true;
+        }
+        return false;
     }
 
     update() {
+        if (!this.stats.isAlive) return false;
+
         if (!this.movingVertically) {
             let oldCol = this.col;
-
             let desiredCol = this.horizontalPattern();
-        
             let step = Math.sign(desiredCol - this.col);
             let newCol = this.col + step;
 
@@ -147,6 +165,7 @@ class Labyrinth {
             }
             findNPCs();
         }
+        if (this.completed) return;
 
         let npcMoved = false;
         for (let npc of npcs) {
@@ -175,6 +194,27 @@ class Labyrinth {
 
         let tRow = playerPos.row + (1 * drow);
         let tcol = playerPos.col + (1 * dcol);
+
+        let npc = npcs.find(n => n.row === tRow && n.col === tcol && n.stats.isAlive);
+        if (npc) {
+            npc.takeDamage(playerStats.strength);
+            if (!npc.stats.isAlive) {
+                eventText = "Defeated an Enemy!";
+            } else {
+                playerStats.hp -= npc.stats.strength;
+                eventText = `You dealt ${playerStats.strength} damage and took ${npc.stats.strength} damage!`;
+
+                if (playerStats.hp <= 0) {
+                    playerStats.isAlive = false;
+                    eventText = "Game Over!";
+                    this.completed = true;
+                }
+            }
+            this.dirty = true;
+            return;
+        }
+
+
 
         if (currentLevel === startingLevel && tcol === level[0].length - 1 && tRow === 2) {
             levelStates[currentLevel] = level.map(row => [...row]);
@@ -316,7 +356,8 @@ class Labyrinth {
 function renderHud() {
     let hpBar = `Life:[${ANSI.COLOR.RED + pad(playerStats.hp, "♥︎") + ANSI.COLOR_RESET}${ANSI.COLOR.LIGHT_GRAY + pad(HP_MAX - playerStats.hp, "♥︎") + ANSI.COLOR_RESET}]`
     let cash = `$:${playerStats.chash}`;
-    return `${hpBar} ${cash}\n`;
+    let strength = `STR:${playerStats.strength}`;
+    return `${hpBar} ${cash} ${strength}\n`;
 }
 
 function pad(len, text) {
