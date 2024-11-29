@@ -1,6 +1,6 @@
 # Week-48-Portfolio-IV
 
-functionalities added:
+functionalities implemented:
 
 ** The starting level has an empty slot in the surrounding wall. This slot should function as a door into the level called "aSharpPlace." Implement the door functionality so that the player can proceed to the next level.
 
