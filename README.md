@@ -25,3 +25,5 @@ Have environment items like "◀︎" deal damage.
 Have event messages remain on screen longer (currently, they only survive one update cycle).
 
 Be able to restart or quit the game when the game is over. 
+
+Center the level on the screen.

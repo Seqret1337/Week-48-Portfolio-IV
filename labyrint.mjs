@@ -359,8 +359,18 @@ class Labyrinth {
         let rendring = "";
         rendring += renderHud();
 
+        const terminalHeight = process.stdout.rows || 24;
+        const levelHeight = level.length;
+        const startRow = Math.max(0, Math.floor((terminalHeight - levelHeight) / 2));
+
+        const terminalWidth = process.stdout.columns || 80;
+        const levelWidth = level[0].length;
+        const padding = " ".repeat(Math.max(0, Math.floor(terminalWidth - levelWidth) / 2));
+
+        console.log(ANSI.moveCursorTo(startRow, 0));
+
         for (let row = 0; row < level.length; row++) {
-            let rowRendering = "";
+            let rowRendering = padding;
             for (let col = 0; col < level[row].length; col++) {
                 let symbol = level[row][col];
                 if (pallet[symbol] != undefined) {
