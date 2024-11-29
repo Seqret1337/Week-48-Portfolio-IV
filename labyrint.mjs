@@ -63,7 +63,7 @@ let eventText = "";
 
 const HP_MAX = 10;
 
-const playerStats = {
+let playerStats = {
     hp: 8,
     chash: 0,
     strength: 3,
@@ -149,6 +149,21 @@ function findNPCs() {
     }
 }
 class Labyrinth {
+    constructor(reset = false) {
+        if (reset) {
+            level = readMapFile(levels[startingLevel]);
+            playerPos = {row: null, col: null };
+            currentLevel = startingLevel;
+            playerStats = {hp: 8, chash: 0, strength: 5, isAlive: true };
+            npcs = [];
+            isDirty = true;
+        }
+
+        this.messageTimer = 0;
+        this.messageDisplayTime = 20;
+        this.dirty = false;
+        this.completed = false;
+    }
 
     update() {
 
@@ -208,8 +223,8 @@ class Labyrinth {
 
                 if (playerStats.hp <= 0) {
                     playerStats.isAlive = false;
-                    eventText = "Game Over!";
                     this.completed = true;
+                    return;
                 }
             }
             this.dirty = true;
@@ -281,7 +296,6 @@ class Labyrinth {
 
                 if (playerStats.hp <= 0) {
                     playerStats.isAlive = false;
-                    eventText = "Game Over!";
                     this.completed = true;
                     return;
                 }
@@ -343,7 +357,6 @@ class Labyrinth {
         console.log(ANSI.CLEAR_SCREEN, ANSI.CURSOR_HOME);
 
         let rendring = "";
-
         rendring += renderHud();
 
         for (let row = 0; row < level.length; row++) {
@@ -361,9 +374,17 @@ class Labyrinth {
         }
 
         console.log(rendring);
+
         if (eventText != "") {
+            this.messageTimer = this.messageDisplayTime;
+        }
+        if (this.messageTimer > 0) {
             console.log(eventText);
-            eventText = "";
+            this.messageTimer--;
+        }
+        if (this.completed) {
+            console.log("Game Over!")
+            console.log("\nPress R to restart or Q to quit");
         }
     }
 }

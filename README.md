@@ -21,3 +21,7 @@ Implement a simple battle system where collisions deal damage, using player and 
 Output battle events to the event messages displayed beneath the map.
 
 Have environment items like "◀︎" deal damage.
+
+Have event messages remain on screen longer (currently, they only survive one update cycle).
+
+Be able to restart or quit the game when the game is over. 
