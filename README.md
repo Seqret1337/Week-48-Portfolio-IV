@@ -11,3 +11,6 @@ functionalities added:
 ** Ensure that when going back through a door, the player returns to the correct room.
 
 ** Make the X NPC characters perform a simple patrol (+/-2 from their starting locations).
+
+** Create an animated splash screen (this was a group assignment from a previous week) using splashScreen.mjs.
+

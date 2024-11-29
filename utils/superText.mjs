@@ -1,4 +1,4 @@
-import { ANSI } from "./ANSI.mjs"
+import ANSI from "./ANSI.mjs"
 import { stdin, stdout } from 'node:process';
 
 class Text {
