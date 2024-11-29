@@ -17,3 +17,7 @@ functionalities added:
 Give the NPCs stats, such as strength and hitpoints.
 
 Implement a simple battle system where collisions deal damage, using player and NPC stats to calculate damage dealt.
+
+Output battle events to the event messages displayed beneath the map.
+
+Have environment items like "◀︎" deal damage.

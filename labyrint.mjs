@@ -34,7 +34,7 @@ let pallet = {
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
-    "♨": ANSI.COLOR.BLUE,
+    "♨": ANSI.COLOR.BLUE
 }
 
 let isDirty = true;
@@ -50,12 +50,14 @@ const LOOT = "$"
 const NPC = "X";
 const WALL = "█";
 const TELEPORTER = "♨";
+const LEFTSPIKE = "◀︎";
+const RIGHTSPIKE = "►";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY, TELEPORTER];
+const THINGS = [LOOT, EMPTY, TELEPORTER, LEFTSPIKE, RIGHTSPIKE];
 
 let eventText = "";
 
@@ -271,8 +273,21 @@ class Labyrinth {
         }
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
-
             let currentItem = level[tRow][tcol];
+
+            if (currentItem === LEFTSPIKE || currentItem === RIGHTSPIKE) {
+                playerStats.hp -= 2;
+                eventText = "You took 2 damage from touching the spikes";
+
+                if (playerStats.hp <= 0) {
+                    playerStats.isAlive = false;
+                    eventText = "Game Over!";
+                    this.completed = true;
+                    return;
+                }
+            }
+
+            
 
             if (currentItem === TELEPORTER) {
                 let otherTeleporter = this.findOtherTeleporter(tRow, tcol);
